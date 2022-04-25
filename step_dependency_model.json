@@ -1,0 +1,14 @@
+{
+    "stages":[
+        {
+            "stage_id":"map",
+            "steps":[],
+            "parents":[] 
+        },
+        {
+            "stage_id":"reduce",
+            "steps":["read","reduce"],
+            "parents":["map"]
+        }
+    ]
+}

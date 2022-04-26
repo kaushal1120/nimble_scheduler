@@ -3,6 +3,10 @@ import re
 from contextlib import contextmanager
 from contextlib import ExitStack
 
+'''
+Usage: Map.mapData('file_name.txt')
+'''
+
 class Map():
 
   #Have no of reducers here

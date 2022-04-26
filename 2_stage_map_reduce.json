@@ -5,7 +5,7 @@
             "id": 0,
             "parent": null,
             "child": 1,
-	    "exec_file": "map.py",
+	        "exec_file": "map.py",
             "tasks": [
                 {
                     "id": 0,
@@ -14,8 +14,8 @@
                         {
                             "id": 0,
                             "type": "map",
-			    "func_name": "map",
-			    "args": ["path_to_file"],
+			                "func_name": "map",
+			                "args": ["path_to_file"],
                             "P": 0,
                             "rp": 0,
                             "rc": 0,
@@ -37,8 +37,8 @@
                         {
                             "id": 0,
                             "type": "map",
-			    "func_name": "map",
-			    "args": ["3","path_to_file"],
+			                "func_name": "map",
+			                "args": ["3","path_to_file"],
                             "P": 0,
                             "rp": 0,
                             "rc": 0,
@@ -60,8 +60,8 @@
                         {
                             "id": 0,
                             "type": "map",
-			    "func_name": "map",
-			    "args": ["3","path_to_file"],
+			                "func_name": "map",
+			                "args": ["3","path_to_file"],
                             "P": 0,
                             "rp": 0,
                             "rc": 0,

@@ -8,7 +8,7 @@ import json
 def exec_task(task):
     step_durations = []
     for step in task['steps']:
-        arglist = "("
+        arglist = "(" + task['task_id'] + ","
         arglist += ",".join(arglist)
         arglist += ")"
         start = time.time()

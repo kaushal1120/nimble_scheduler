@@ -4,7 +4,7 @@ from contextlib import contextmanager
 from contextlib import ExitStack
 
 '''
-Usage: Map.mapData('file_name',task_id)
+Usage: Map.mapData(task_id,'file_name')
 '''
 
 class Map():
@@ -20,7 +20,7 @@ class Map():
 
 
   @staticmethod
-  def mapData(file_name: str, task_id: int):
+  def mapData(task_id: int,file_name: str):
     # First read data from file, then map and then write based on consistent hashing.
     # For conistent hashing we need to cautios as we want to write data to predeined no of files
     # If the file is not there then open the file and append it.

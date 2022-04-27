@@ -2,20 +2,20 @@
     "job_name": "2_stage_map_reduce",
     "stages": [
         {
-            "id": 0,
+            "stage_id": 0,
             "parent": null,
             "child": 1,
 	        "exec_file": "map.py",
             "tasks": [
                 {
-                    "id": 0,
-                    "type": "map",
+                    "task_id": 0,
+                    "task_type": "map",
                     "steps": [
                         {
-                            "id": 0,
-                            "type": "map",
-			                "func_name": "map",
-			                "args": ["path_to_file"],
+                            "step_id": 0,
+                            "step_type": "map",
+			                "step_func_name": "map",
+			                "step_func_args": ["path_to_file"],
                             "P": 0,
                             "rp": 0,
                             "rc": 0,
@@ -30,15 +30,15 @@
                     "Ts*": 0,
                     "scheduled": false
                 },
-		{
-                    "id": 1,
-                    "type": "map",
+		        {
+                    "task_id": 1,
+                    "task_type": "map",
                     "steps": [
                         {
-                            "id": 0,
-                            "type": "map",
-			                "func_name": "map",
-			                "args": ["3","path_to_file"],
+                            "step_id": 0,
+                            "step_type": "map",
+			                "step_func_name": "map",
+			                "step_func_args": ["path_to_file"],
                             "P": 0,
                             "rp": 0,
                             "rc": 0,
@@ -53,15 +53,15 @@
                     "Ts*": 0,
                     "scheduled": false
                 },
-		{
-                    "id": 2,
-                    "type": "map",
+		        {
+                    "task_id": 2,
+                    "task_type": "map",
                     "steps": [
                         {
-                            "id": 0,
-                            "type": "map",
-			                "func_name": "map",
-			                "args": ["3","path_to_file"],
+                            "step_id": 0,
+                            "step_type": "map",
+			                "step_func_name": "map",
+			                "step_func_args": ["path_to_file"],
                             "P": 0,
                             "rp": 0,
                             "rc": 0,
@@ -79,32 +79,71 @@
             ]
         },
         {
-            "id": 1,
+            "stage_id": 1,
             "parent": 0,
             "child": null,
             "tasks": [
                 {
-                    "id": 0,
-                    "type": "reduce",
+                    "task_id": 0,
+                    "task_type": "reduce",
                     "steps": [
                         {
-                            "type": "read",
-                            "id": 0,
+                            "step_type": "reduce",
+                            "step_id": 1,
+                            "step_func_name": "reduce",
+			                "step_func_args": ["path_to_file"],
                             "P": 0,
                             "rp": 0,
                             "rc": 0,
                             "d*": 0,
                             "t*": 0,
-                            "has_parent": true,
+                            "has_parent": false,
                             "parent": {
-                                "stage_id": 0,
                                 "task_id": 0,
                                 "step_id": 0
                             }
-                        },
+                        }
+                    ],
+                    "D*": 0,
+                    "Te*": 0,
+                    "Ts*": 0,
+                    "scheduled": false
+                },
+                {
+                    "task_id": 1,
+                    "task_type": "reduce",
+                    "steps": [
                         {
-                            "type": "reduce",
-                            "id": 1,
+                            "step_type": "reduce",
+                            "step_id": 1,
+                            "step_func_name": "reduce",
+			                "step_func_args": ["path_to_file"],
+                            "P": 0,
+                            "rp": 0,
+                            "rc": 0,
+                            "d*": 0,
+                            "t*": 0,
+                            "has_parent": false,
+                            "parent": {
+                                "task_id": 0,
+                                "step_id": 0
+                            }
+                        }
+                    ],
+                    "D*": 0,
+                    "Te*": 0,
+                    "Ts*": 0,
+                    "scheduled": false
+                },
+                {
+                    "task_id": 2,
+                    "task_type": "reduce",
+                    "steps": [
+                        {
+                            "step_type": "reduce",
+                            "step_id": 1,
+                            "step_func_name": "reduce",
+			                "step_func_args": ["path_to_file"],
                             "P": 0,
                             "rp": 0,
                             "rc": 0,

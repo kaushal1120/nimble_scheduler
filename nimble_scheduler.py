@@ -51,11 +51,6 @@ def smap(f):
 def get_optimal_duration(task):
     return task['D*']
 
-def compare(task, step_1, step_2):
-    if(step_1['d*'] == step_2['d*']):
-        return step2
-    return step_2['d*'] - step_1['d*']
-
 #Assuming parent started at 0.0
 def get_step_finish_time(step):
     parent_stage = stage_map[step['parent'][0:1]]
@@ -93,6 +88,8 @@ def get_step_finish_time(step):
             start = step_discrete_intervals[i][0]
             end = step_discrete_intervals[i][1]
             current_rp = rps[i]
+    #get rac per interval like rp
+    #iterate over intervals and rac and stop at the time when P is consumed
 
 def get_optimal_finish_time(task):
     t_opt = 0.0

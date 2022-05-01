@@ -51,10 +51,22 @@ def smap(f):
 def get_optimal_duration(task):
     return task['D*']
 
+def interval_overlaps(interval_1,interval_2):
+    if interval_1[0] < interval_2[0]:
+        if interval_1[1] > interval_2[0]:
+            return True
+        else:
+            return False
+    else:
+        if interval_2[1] > interval_1[0]:
+            return True
+        else:
+            return False
+        
+
 #Assuming parent started at 0.0
 def get_step_finish_time(step):
     parent_stage = stage_map[step['parent'][0:1]]
-    parent_steps = []
     step_discrete_intervals = []
     rps = []
     for task in parent_stage['tasks']:
@@ -63,33 +75,41 @@ def get_step_finish_time(step):
         step_discrete_intervals.append(interval)
         rps.append(produce_step['rp'])
     step_discrete_intervals, rps = (list(t) for t in zip(*sorted(zip(step_discrete_intervals, rps))))
-
-    step_overlapped_intervals = []
+    
+    #Compute aggregated rp(t) for each discretized time interval
+    step_intervals = []
     new_rps = []
-    start = step_discrete_intervals[0][0]
-    end = step_discrete_intervals[0][1]
-    current_rp = rps[0]
-    for i in range(1,len(step_discrete_intervals)):
-        #Fix karo
-        if step_discrete_intervals[i][0] < end:
-            step_overlapped_intervals.append([start,step_discrete_intervals[i][0]])
-            new_rps.append(current_rp)
-            step_overlapped_intervals.append([step_discrete_intervals[i][0],min(step_discrete_intervals[i][1],end)])
-            new_rps.append(current_rp + rps[i])
-            if step_discrete_intervals[i][1] > end:
-                current_rp = rps[i]
-                start = end
-                end = step_discrete_intervals[i][1]
-            else:
-                start = step_discrete_intervals[i][1]
+    step_discrete_timestamps = sort(list(chain.from_iterable(step_discrete_intervals)))
+    for i in range(1,step_discrete_timestamps):
+        step_intervals.append([step_discrete_timestamps[i-1],step_discrete_timestamps[i]])
+        new_rps.append(0)
+    for i in range(0,len(step_intervals)):
+        for j in range(0,len(step_discrete_intervals)):
+            if interval_overlaps(step_intervals[i],step_discrete_intervals[j]):
+                new_rps[i] += rps[j]
+
+    #Calculate rac for each discretized time interval
+    produced_till_here = 0
+    consumed_till_here = 0
+    actually_consumed_till_here = 0
+    time_passed = 0
+    racs = []
+    for i in range(0,len(step_intervals)):
+        time_passed += step_intervals[i][1] - step_intervals[i][0]
+        produced_till_here += (step_intervals[i][1] - step_intervals[i][0])*new_rps[i]
+        consumed_till_here += (step_intervals[i][1] - step_intervals[i][0])*step['rc']
+        if produced_till_here < consumed_till_here:
+            racs.append(min(new_rps[i],step['rc']))
         else:
-            step_overlapped_intervals.append([start,end])
-            new_rps.append(current_rp)
-            start = step_discrete_intervals[i][0]
-            end = step_discrete_intervals[i][1]
-            current_rp = rps[i]
-    #get rac per interval like rp
-    #iterate over intervals and rac and stop at the time when P is consumed
+            racs.append(step['rc'])
+        actually_consumed_till_here += (step_intervals[i][1] - step_intervals[i][0])*racs[i]
+
+    #Calculate optimal step finish time (which only considers its parent step)
+    te = step_intervals[len(step_intervals)][1]
+    if actually_consumed_till_here < produced_till_here:
+        te += (produced_till_here - actually_consumed_till_here)/step['rc']
+    
+    return te
 
 def get_optimal_finish_time(task):
     t_opt = 0.0

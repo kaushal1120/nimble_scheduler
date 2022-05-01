@@ -22,9 +22,11 @@ def exec_task(task,exec_file):
         print('Scheduling task_id: ', task['task_id'], 'of', exec_file, 'at', str(time.time()))
         #Computing step execution time
         start = time.time()
-        func = getattr(obj, step['step_func_name'])(arg_dict)
+        C,P = getattr(obj, step['step_func_name'])(arg_dict)
         end = time.time()
         #Computing cost and star and end times for JCT calculation
+        step['P'] = P
+        step['C'] = C
         total_cost += end-start
         job_end_time = max(job_end_time,end)
         job_start_time = min(job_start_time,start)

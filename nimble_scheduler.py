@@ -1,6 +1,7 @@
 #!/usr/bin/python
 
 from multiprocessing import Pool
+from itertools import chain
 import heapq
 import functools
 import time
@@ -28,8 +29,10 @@ no_of_tasks = 0
 
 def exec_task(i,j,exec_file):
     optimal_task_duration = 0.0
+    task = step_dependency_model['stages'][i]['tasks'][j]
+    
     for step in task['steps']:
-        steps_launched[step['step_id']] = step
+        #steps_launched[step['step_id']] = step
         obj = getattr(__import__(exec_file),exec_file)
 
         #Prepare arguments to task exec
@@ -46,7 +49,7 @@ def exec_task(i,j,exec_file):
         #Update P, C, rc, rp, total job cost, optimal step duration, job finish time
         step['P'] = P
         step['C'] = C
-        step_discrete_timestamps[step['step_id']] = [start,end]
+        #step_discrete_timestamps[step['step_id']] = [start,end]
         #Averaging for better estimates
         step['rc'] = (step['rc'] + C/(end-start))/(task['no_of_runs']+1)
         step['rp'] = (step['rp'] + P/(end-start))/(task['no_of_runs']+1)
@@ -94,7 +97,7 @@ def get_step_finish_time(step):
     #Compute aggregated rp(t) for each discretized time interval
     step_intervals = []
     new_rps = []
-    step_discrete_timestamps = sort(list(chain.from_iterable(step_discrete_intervals)))
+    step_discrete_timestamps = sorted(list(chain.from_iterable(step_discrete_intervals)))
     for i in range(1,step_discrete_timestamps):
         step_intervals.append([step_discrete_timestamps[i-1],step_discrete_timestamps[i]])
         new_rps.append(0)
@@ -141,8 +144,8 @@ def get_optimal_finish_time(stage_id,task_id):
 #Computes optimal launch time to schedule task
 def get_optimal_launch_time(stage_id,task_id):
     task = step_dependency_model['stages'][stage_id]['tasks'][task_id]
-    D = get_optimal_duration(i,j)
-    Te = get_optimal_finish_time(i,j)
+    D = get_optimal_duration(stage_id,task_id)
+    Te = get_optimal_finish_time(stage_id,task_id)
     task['Te'] = Te
     task['Ts'] = Te - D
     return task['Ts']
@@ -155,7 +158,7 @@ def dispatcher(no_of_tasks):
     while len(results) < no_of_tasks:
         if len(scheduled) == 0:
             continue
-        while len(scheduled) > 0 and scheduled[0][0] >= time.time()-start:
+        while len(scheduled) > 0 and scheduled[0][0] >= time.time()-start_time:
             processes_to_dispatch = []
             processes_to_dispatch.append(scheduled[0][1])
             scheduled.pop(0)
@@ -199,7 +202,7 @@ def schedule():
                 new_parents.append(stage['stage_id'])
                 for j in range(0,len(stage['tasks'])):
                     get_optimal_launch_time(i,j)                    
-                    scheduled.append((functools.partial(exec_task,i,j,stage['exec_file'],i,j))
+                    scheduled.append((functools.partial(exec_task,i,j,stage['exec_file'],i,j)))
         no_of_tasks -= len(scheduled)
         current_parents = new_parents
         new_parents = []

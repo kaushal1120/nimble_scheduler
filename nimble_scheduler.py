@@ -129,7 +129,7 @@ def get_optimal_finish_time(task):
     for step in task['steps']:
         if step['has_parent']:
             t = max(get_step_finish_time(task),t_opt + step['d*'])
-        else
+        else:
             t = t_opt + step['d*']
         t_opt = t
     return t_opt    
@@ -187,7 +187,7 @@ def schedule():
             if stage['parent'] in current_parents:
                 new_parents.append(stage['stage_id'])
                 for j in range(0,len(stage['tasks'])):
-                    scheduled.append((functools.partial(exec_task,i,j,stage['exec_file'],i,j))
+                    scheduled.append((functools.partial(exec_task,i,j,stage['exec_file'],i,j)))
                     get_optimal_launch_time(task)                    
         #Find a way to fork and continue on this thread
         with Pool() as pool:

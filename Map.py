@@ -34,7 +34,7 @@ class Map():
     file_names = m.getFileNames(files['input_file'])
 
     with ExitStack() as stack:
-      files = [stack.enter_context(open(f_name, f_mode)) for f_name,f_mode in file_names]
+      files = [stack.enter_context(open(f_name, f_mode, encoding='utf-8')) for f_name,f_mode in file_names]
       for f in files[1:]:
         f.write('#####\n')
         f.flush()
@@ -49,7 +49,7 @@ class Map():
           output_file_size += len(o_line)
           o_file.write(o_line)
       for f in files[1:]:
-        f.write('*****')
+        f.write('*****\n')
         f.flush()
 
     '''

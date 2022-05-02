@@ -1,17 +1,30 @@
 #!/usr/bin/python
 
 from multiprocessing import Pool
+import heapq
 import functools
 import time
 import json
 
+#Stores total cost of running all tasks individually
 total_cost=0.0
+#To compute JCT
 job_start_time=sys.float_info.max
 job_end_time=0.0
-stage_map = {}
-step_discrete_timestamps = {}
 
-def exec_task(task,exec_file):
+#Stage map stage_id -> stage object
+stage_map = {}
+
+#global step dependency model
+step_dependency_model = {}
+
+#Priority queue ueue to dispath processes from
+scheduled = []
+
+#Used to terminate dispatcher process
+no_of_tasks = 0
+
+def exec_task(i,j,exec_file):
     optimal_task_duration = 0.0
     for step in task['steps']:
         steps_launched[step['step_id']] = step
@@ -62,7 +75,6 @@ def interval_overlaps(interval_1,interval_2):
             return True
         else:
             return False
-        
 
 #Assuming parent started at 0.0
 def get_step_finish_time(step):
@@ -70,6 +82,7 @@ def get_step_finish_time(step):
     step_discrete_intervals = []
     rps = []
     for task in parent_stage['tasks']:
+        #Assumption: No two steps of a stage are parents to different steps
         produce_step = task['steps'][len(task['steps'])-1]
         interval = [step_discrete_intervals.append(task['D*']-produce_step['d*']),step_discrete_intervals.append(task['D*'])]
         step_discrete_intervals.append(interval)
@@ -126,32 +139,42 @@ def get_optimal_launch_time(task):
     Te = get_optimal_finish_time(task)
     return Te - D
 
+def dispatcher(no_of_tasks,start_time):
+    start_time = time.time()
+    pool = Pool()
+    while no_of_tasks > 0:
+        if len(scheduled) == 0:
+            continue
+        i = 0
+        while len(scheduled) > 0 and step_dependency_model['stages'][scheduled[i][1]]['tasks'][scheduled[i][2]] >= time.time()-start:
+            pool.apply(scheduled[i])
+
+
 def schedule():
-    with open('path_to_file/file.json', 'r') as f:
+    with open('2_stage_map_reduce.json', 'r') as f:
         step_dependency_model = json.load(f)
     print('Read step dependency model successfully')
 
     #Nimble scheduler
     current_parents = []
     new_parents = []
-    scheduled = []
 
-    no_of_tasks = 0
+    res = []
 
     #Scheduling initial stages with no parents
-    for stage in step_dependency_model['stages']:
+    for i in range(0,len(step_dependency_model['stages'])):
+        stage = step_dependency_model['stages'][i]
         no_of_tasks += len(stage['tasks'])
         stage_map[stage['stage_id']] = stage
         if stage['parent'] is None:
             new_parents.append(stage['stage_id'])
-            for task in stage['tasks']:
-                scheduled.append(functools.partial(exec_task,task)
+            for j in range(0,len(stage['tasks'])):
+                heapq.heappush(scheduled, (stage['task']['Ts'], functools.partial(exec_task,i,j,stage['exec_file'])))
 
     #Or fork a new process that polls a queue and schedules tasks as they come
     with Pool() as pool:
         #Find a way to fork and continue on this thread
-        res = pool.map(smap, scheduled)
-        print(res)   
+        res = pool.map_async(smap, scheduled)  
     no_of_tasks -= len(scheduled)
     scheduled = []
     current_parents = new_parents
@@ -159,11 +182,12 @@ def schedule():
 
     #Scheduling remaining stages in bfs
     while no_of_tasks > 0:
-        for stage in step_dependency_model['stages']:
+        for i in range(0,len(step_dependency_model['stages'])):
+            stage = step_dependency_model['stages'][i]
             if stage['parent'] in current_parents:
                 new_parents.append(stage['stage_id'])
-                for task in stage['tasks']:
-                    scheduled.append(functools.partial(exec_task,task)
+                for j in range(0,len(stage['tasks'])):
+                    scheduled.append((functools.partial(exec_task,i,j,stage['exec_file'],i,j))
                     get_optimal_launch_time(task)                    
         #Find a way to fork and continue on this thread
         with Pool() as pool:

@@ -1,0 +1,321 @@
+{
+    "job_name": "2_stage_map_reduce",
+    "stages": [
+        {
+            "stage_id": "0",
+            "parent": null,
+            "child": "1",
+            "exec_file": "Map",
+            "tasks": [
+                {
+                    "task_id": "00",
+                    "task_type": "map",
+                    "steps": [
+                        {
+                            "step_id": "000",
+                            "step_type": "map",
+                            "step_func_name": "mapData",
+                            "step_func_arg_keys": [
+                                "input_file"
+                            ],
+                            "step_func_arg_vals": [
+                                "plain_text_1"
+                            ],
+                            "P": 0,
+                            "C": 0,
+                            "rp": 0,
+                            "rc": 0,
+                            "d*": 0,
+                            "t*": 0,
+                            "has_parent": false,
+                            "parent": null
+                        }
+                    ],
+                    "D*": 0,
+                    "Te*": 0,
+                    "Ts*": 0,
+                    "scheduled": false,
+                    "no_of_runs": 0
+                },
+                {
+                    "task_id": "01",
+                    "task_type": "map",
+                    "steps": [
+                        {
+                            "step_id": "010",
+                            "step_type": "map",
+                            "step_func_name": "mapData",
+                            "step_func_arg_keys": [
+                                "input_file"
+                            ],
+                            "step_func_arg_vals": [
+                                "plain_text_2"
+                            ],
+                            "P": 0,
+                            "C": 0,
+                            "rp": 0,
+                            "rc": 0,
+                            "d*": 0,
+                            "t*": 0,
+                            "has_parent": false,
+                            "parent": null
+                        }
+                    ],
+                    "D*": 0,
+                    "Te*": 0,
+                    "Ts*": 0,
+                    "scheduled": false,
+                    "no_of_runs": 0
+                },
+                {
+                    "task_id": "02",
+                    "task_type": "map",
+                    "steps": [
+                        {
+                            "step_id": "020",
+                            "step_type": "map",
+                            "step_func_name": "mapData",
+                            "step_func_arg_keys": [
+                                "input_file"
+                            ],
+                            "step_func_arg_vals": [
+                                "plain_text_3"
+                            ],
+                            "P": 0,
+                            "C": 0,
+                            "rp": 0,
+                            "rc": 0,
+                            "d*": 0,
+                            "t*": 0,
+                            "has_parent": false,
+                            "parent": null
+                        }
+                    ],
+                    "D*": 0,
+                    "Te*": 0,
+                    "Ts*": 0,
+                    "scheduled": false,
+                    "no_of_runs": 0
+                },
+                {
+                    "task_id": "03",
+                    "task_type": "map",
+                    "steps": [
+                        {
+                            "step_id": "030",
+                            "step_type": "map",
+                            "step_func_name": "mapData",
+                            "step_func_arg_keys": [
+                                "input_file"
+                            ],
+                            "step_func_arg_vals": [
+                                "plain_text_4"
+                            ],
+                            "P": 0,
+                            "C": 0,
+                            "rp": 0,
+                            "rc": 0,
+                            "d*": 0,
+                            "t*": 0,
+                            "has_parent": false,
+                            "parent": null
+                        }
+                    ],
+                    "D*": 0,
+                    "Te*": 0,
+                    "Ts*": 0,
+                    "scheduled": false,
+                    "no_of_runs": 0
+                },
+                {
+                    "task_id": "04",
+                    "task_type": "map",
+                    "steps": [
+                        {
+                            "step_id": "040",
+                            "step_type": "map",
+                            "step_func_name": "mapData",
+                            "step_func_arg_keys": [
+                                "input_file"
+                            ],
+                            "step_func_arg_vals": [
+                                "plain_text_5"
+                            ],
+                            "P": 0,
+                            "C": 0,
+                            "rp": 0,
+                            "rc": 0,
+                            "d*": 0,
+                            "t*": 0,
+                            "has_parent": false,
+                            "parent": null
+                        }
+                    ],
+                    "D*": 0,
+                    "Te*": 0,
+                    "Ts*": 0,
+                    "scheduled": false,
+                    "no_of_runs": 0
+                }
+            ]
+        },
+        {
+            "stage_id": "1",
+            "parent": "0",
+            "child": 1,
+            "exec_file": "Reduce",
+            "tasks": [
+                {
+                    "task_id": "10",
+                    "task_type": "reduce",
+                    "steps": [
+                        {
+                            "step_id": "100",
+                            "step_type": "reduce",
+                            "step_func_name": "reduceData",
+                            "step_func_arg_keys": [
+                                "input_file"
+                            ],
+                            "step_func_arg_vals": [
+                                "reduce_output_1"
+                            ],
+                            "P": 0,
+                            "C": 0,
+                            "rp": 0,
+                            "rc": 0,
+                            "d*": 0,
+                            "t*": 0,
+                            "has_parent": true,
+                            "parent": "000"
+                        }
+                    ],
+                    "D*": 0,
+                    "Te*": 0,
+                    "Ts*": 0,
+                    "scheduled": false,
+                    "no_of_runs": 0
+                },
+                {
+                    "task_id": "11",
+                    "task_type": "reduce",
+                    "steps": [
+                        {
+                            "step_id": "110",
+                            "step_type": "reduce",
+                            "step_func_name": "reduceData",
+                            "step_func_arg_keys": [
+                                "input_file"
+                            ],
+                            "step_func_arg_vals": [
+                                "reduce_output_2"
+                            ],
+                            "P": 0,
+                            "C": 0,
+                            "rp": 0,
+                            "rc": 0,
+                            "d*": 0,
+                            "t*": 0,
+                            "has_parent": true,
+                            "parent": "010"
+                        }
+                    ],
+                    "D*": 0,
+                    "Te*": 0,
+                    "Ts*": 0,
+                    "scheduled": false,
+                    "no_of_runs": 0
+                },
+                {
+                    "task_id": "12",
+                    "task_type": "reduce",
+                    "steps": [
+                        {
+                            "step_id": "120",
+                            "step_type": "reduce",
+                            "step_func_name": "reduceData",
+                            "step_func_arg_keys": [
+                                "input_file"
+                            ],
+                            "step_func_arg_vals": [
+                                "reduce_output_3"
+                            ],
+                            "P": 0,
+                            "C": 0,
+                            "rp": 0,
+                            "rc": 0,
+                            "d*": 0,
+                            "t*": 0,
+                            "has_parent": true,
+                            "parent": "020"
+                        }
+                    ],
+                    "D*": 0,
+                    "Te*": 0,
+                    "Ts*": 0,
+                    "scheduled": false,
+                    "no_of_runs": 0
+                },
+                {
+                    "task_id": "13",
+                    "task_type": "reduce",
+                    "steps": [
+                        {
+                            "step_id": "130",
+                            "step_type": "reduce",
+                            "step_func_name": "reduceData",
+                            "step_func_arg_keys": [
+                                "input_file"
+                            ],
+                            "step_func_arg_vals": [
+                                "reduce_output_4"
+                            ],
+                            "P": 0,
+                            "C": 0,
+                            "rp": 0,
+                            "rc": 0,
+                            "d*": 0,
+                            "t*": 0,
+                            "has_parent": true,
+                            "parent": "030"
+                        }
+                    ],
+                    "D*": 0,
+                    "Te*": 0,
+                    "Ts*": 0,
+                    "scheduled": false,
+                    "no_of_runs": 0
+                },
+                {
+                    "task_id": "14",
+                    "task_type": "reduce",
+                    "steps": [
+                        {
+                            "step_id": "140",
+                            "step_type": "reduce",
+                            "step_func_name": "reduceData",
+                            "step_func_arg_keys": [
+                                "input_file"
+                            ],
+                            "step_func_arg_vals": [
+                                "reduce_output_5"
+                            ],
+                            "P": 0,
+                            "C": 0,
+                            "rp": 0,
+                            "rc": 0,
+                            "d*": 0,
+                            "t*": 0,
+                            "has_parent": true,
+                            "parent": "040"
+                        }
+                    ],
+                    "D*": 0,
+                    "Te*": 0,
+                    "Ts*": 0,
+                    "scheduled": false,
+                    "no_of_runs": 0
+                }
+            ]
+        }
+    ]
+}

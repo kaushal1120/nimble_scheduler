@@ -18,7 +18,7 @@ class Reduce():
     start_count = 0
     end_count = 0
     words_dict = defaultdict(int)
-    with open(file_name) as r_file:
+    with open(file_name, encoding='utf-8') as r_file:
       while True:
         for line in r_file:
           input_file_size += len(line)
@@ -34,7 +34,7 @@ class Reduce():
             break
     
     # This is the end. We might want to save this data or not, decide later. 
-    with open('final', 'a') as file:
+    with open('final', 'a', encoding='utf-8') as file:
       for k in words_dict.keys():
         l = str(k)+' '+str(words_dict[k])+'\n'
         output_file_size += len(l)

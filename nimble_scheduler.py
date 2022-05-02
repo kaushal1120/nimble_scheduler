@@ -66,7 +66,9 @@ def exec_task(i,j,exec_file):
 def smap(f):
     return f()
 
-def get_optimal_duration(task):
+def get_optimal_duration(stage_id, task_id):
+    global step_dependency_model
+    task = step_dependency_model['stages'][stage_id]['tasks'][task_id]
     return task['D*']
 
 def interval_overlaps(interval_1,interval_2):
@@ -131,6 +133,7 @@ def get_step_finish_time(step):
 
 #
 def get_optimal_finish_time(stage_id,task_id):
+    global step_dependency_model
     task = step_dependency_model['stages'][stage_id]['tasks'][task_id]
     t_opt = 0.0
     for step in task['steps']:
@@ -143,6 +146,7 @@ def get_optimal_finish_time(stage_id,task_id):
 
 #Computes optimal launch time to schedule task
 def get_optimal_launch_time(stage_id,task_id):
+    global step_dependency_model
     task = step_dependency_model['stages'][stage_id]['tasks'][task_id]
     D = get_optimal_duration(stage_id,task_id)
     Te = get_optimal_finish_time(stage_id,task_id)
@@ -169,6 +173,7 @@ def dispatcher(no_of_tasks):
     return results
 
 def schedule():
+    global step_dependency_model
     with open('2_stage_map_reduce.json', 'r') as f:
         step_dependency_model = json.load(f)
     print('Read step dependency model successfully')
@@ -176,7 +181,7 @@ def schedule():
     #Nimble scheduler
     current_parents = []
     new_parents = []
-
+    no_of_tasks = 0
     results = []
 
     #Scheduling initial stages with no parents
@@ -187,12 +192,13 @@ def schedule():
         if stage['parent'] is None:
             new_parents.append(stage['stage_id'])
             for j in range(0,len(stage['tasks'])):
-                heapq.heappush(scheduled, (stage['task'][j]['Ts'], (stage['task'][j]['Ts'],functools.partial(exec_task,i,j,stage['exec_file']))))
+                heapq.heappush(scheduled, (stage['tasks'][j]['Ts*'], (stage['tasks'][j]['Ts*'],functools.partial(exec_task,i,j,stage['exec_file']))))
 
     #Starting the dispatcher
     #There could be some contention for the queue of processes 'scheduled'
-    with Pool() as pool:
-        results = pool.apply_async(dispatcher,no_of_tasks)
+    pool = Pool()
+    # with Pool() as pool:
+    results = pool.apply_async(dispatcher,no_of_tasks)
 
     #Scheduling remaining stages in bfs
     while no_of_tasks > 0:

@@ -53,7 +53,7 @@ def schedule():
 
     print(scheduled)
 
-    #chedule all stages at once
+    #schedule all stages at once
     with Pool() as pool:
         res = pool.map_async(smap, scheduled)
         print(res.get())

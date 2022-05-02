@@ -1,0 +1,46 @@
+from collections import defaultdict
+
+class Reduce():
+
+  ''' 
+    task_id is important because we need to know which file to pick for reading.
+    Remember start_of_file: #####, end_of_file: *****
+    So, we keep incrementing for start_of_file and decrement for end_of_file, and we are sure that the first
+    word in the file is start of the file, we keep the variable till is reaches 0.
+  '''
+  @staticmethod
+  def reduceData(files: dict()):
+    input_file_size = 0
+    
+    #We might need this or not clarify
+    output_file_size = 0
+    file_name = files['input_file']
+    start_count = 0
+    end_count = 0
+    words_dict = defaultdict(int)
+    with open(file_name) as r_file:
+      while True:
+        for line in r_file:
+          input_file_size += len(line)
+          if line.strip() == "#####":
+            start_count += 1
+          elif line.strip() == "*****":
+            end_count += 1
+          else:
+            d = line.split(' ')
+            words_dict[d[0]] += int(d[1])
+          
+        if start_count - end_count == 0:
+            break
+    
+    # This is the end. We might want to save this data or not, decide later. 
+    with open('final', 'a') as file:
+      for k in words_dict.keys():
+        l = str(k)+' '+str(words_dict[k])+'\n'
+        output_file_size += len(l)
+        file.write(l)
+
+    input_file_size = (input_file_size/(1024*1024))
+    output_file_size = (output_file_size/(1024*1024))
+
+    return [input_file_size,output_file_size]

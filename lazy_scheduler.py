@@ -53,7 +53,7 @@ def smap(f):
     return f()
 
 def schedule():
-    with open('path_to_file/file.json', 'r') as f:
+    with open('2_stage_map_reduce.json', 'r') as f:
         step_dependency_model = json.load(f)
     print('Read step dependency model successfully')
 
@@ -74,8 +74,8 @@ def schedule():
                 scheduled.append(functools.partial(exec_task,i,j,stage['exec_file'])
 
     with Pool() as pool:
-        res = pool.map(smap, scheduled)
-        print(res)
+        res = pool.map_async(smap, scheduled)
+        print(res.get())
     no_of_tasks -= len(scheduled)
     scheduled = []
     current_parents = new_parents
@@ -90,8 +90,8 @@ def schedule():
                 for j in range(0,len(stage['tasks'])):
                     scheduled.append(functools.partial(exec_task,i,j,stage['exec_file'])
         with Pool() as pool:
-            res = pool.map(smap, scheduled)
-            print(res)
+            res = pool.map_async(smap, scheduled)
+            print(res.get())
         no_of_tasks -= len(scheduled)
         scheduled = []
         current_parents = new_parents

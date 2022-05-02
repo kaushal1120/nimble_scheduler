@@ -55,8 +55,8 @@ def schedule():
 
     #chedule all stages at once
     with Pool() as pool:
-        res = pool.map(smap, scheduled)
-        print(res)
+        res = pool.map_async(smap, scheduled)
+        print(res.get())
 
     print('Total cost is:', total_cost)
     print('JCT given start time 0.0', job_end_time-job_start_time)

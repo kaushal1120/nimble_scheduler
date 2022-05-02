@@ -5,6 +5,7 @@ import heapq
 import functools
 import time
 import json
+import json
 import sys
 
 #Stores total cost of running all tasks individually
@@ -132,7 +133,7 @@ def get_optimal_finish_time(stage_id,task_id):
     for step in task['steps']:
         if step['has_parent']:
             t = max(get_step_finish_time(task), t_opt + step['d*'])
-        else
+        else:
             t = t_opt + step['d*']
         t_opt = t
     return t_opt    

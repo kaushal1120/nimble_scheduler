@@ -3,6 +3,9 @@
 from multiprocessing import Pool
 import functools, time, json
 
+#global step dependency model
+step_dependency_model = {}
+
 #Stores total cost of running all tasks individually
 total_cost=0.0
 #To compute JCT
@@ -10,7 +13,8 @@ job_start_time=sys.float_info.max
 job_end_time=0.0
 
 #Code to execute given task for given analytics job
-def exec_task(task,exec_file):
+def exec_task(task,stg_idx,task_idx,exec_file):
+    task = step_dependency_model['stages'][stg_idx]['tasks'][task_idx]
     #Executes each step of the task in that order
     for step in task['steps']:
         #Preparing to execute function from different python class
@@ -42,9 +46,10 @@ def schedule():
 
     #Eager scheduler
     scheduled = []
-    for stage in step_dependency_model['stages']:
-        for task in stage['tasks']:
-            scheduled.append(functools.partial(exec_task,task,stage['exec_file']))
+    for i in range(0,len(step_dependency_model['stages'])):
+        stage = step_dependency_model['stages'][i]
+        for j in range(0,len(stage['tasks'])):
+            scheduled.append(functools.partial(exec_task,i,j,stage['exec_file']))
 
     print(scheduled)
 
@@ -55,6 +60,11 @@ def schedule():
 
     print('Total cost is:', total_cost)
     print('JCT given start time 0.0', job_end_time-job_start_time)
+
+    # Serializing json and writing to file
+    json_object = json.dumps(step_dependency_model, indent = 4)
+    with open("2_stage_map_reduce_eager.json", "w") as outfile:
+        outfile.write(json_object)
 
 if __name__ == '__main__':
     schedule()

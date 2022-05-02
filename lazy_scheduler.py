@@ -11,8 +11,12 @@ total_cost=0.0
 job_start_time=sys.float_info.max
 job_end_time=0.0
 
+#global step dependency model
+step_dependency_model = {}
+
 #Code to execute given task for given analytics job
-def exec_task(task, exec_file):
+def exec_task(task, stg_idx, task_idx, exec_file):
+    task = step_dependency_model['stages'][stg_idx]['tasks'][task_idx]
     optimal_task_duration = 0.0
     #Executes each step of the task in that order
     for step in task['steps']:
@@ -61,12 +65,13 @@ def schedule():
     no_of_tasks = 0
 
     #Scheduling initial stages with no parents
-    for stage in step_dependency_model['stages']:
+    for i in range(0,len(step_dependency_model['stages'])):
+        stage = step_dependency_model['stages'][i]
         no_of_tasks += len(stage['tasks'])
         if stage['parent'] is None:
             new_parents.append(stage['stage_id'])
-            for task in stage['tasks']:
-                scheduled.append(functools.partial(exec_task,task)
+            for j in range(0,len(stage['tasks'])):
+                scheduled.append(functools.partial(exec_task,i,j,stage['exec_file'])
 
     with Pool() as pool:
         res = pool.map(smap, scheduled)
@@ -78,11 +83,12 @@ def schedule():
 
     #Scheduling remaining stages in bfs
     while no_of_tasks > 0:
-        for stage in step_dependency_model['stages']:
+        for i in range(0,len(step_dependency_model['stages'])):
+            stage = step_dependency_model['model'][i]
             if stage['parent'] in current_parents:
                 new_parents.append(stage['stage_id'])
-                for task in stage['tasks']:
-                    scheduled.append(functools.partial(exec_task,task)
+                for j in range(0,len(stage['tasks'])):
+                    scheduled.append(functools.partial(exec_task,i,j,stage['exec_file'])
         with Pool() as pool:
             res = pool.map(smap, scheduled)
             print(res)

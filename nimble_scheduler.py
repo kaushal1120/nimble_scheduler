@@ -122,33 +122,46 @@ def get_step_finish_time(step):
     if actually_consumed_till_here < produced_till_here:
         te += (produced_till_here - actually_consumed_till_here)/step['rc']
     
-    return te
+    return 
 
-def get_optimal_finish_time(task):
+#
+def get_optimal_finish_time(stage_id,task_id):
+    task = step_dependency_model['stages'][stage_id]['tasks'][task_id]
     t_opt = 0.0
     for step in task['steps']:
         if step['has_parent']:
-            t = max(get_step_finish_time(task),t_opt + step['d*'])
+            t = max(get_step_finish_time(task), t_opt + step['d*'])
         else
             t = t_opt + step['d*']
         t_opt = t
     return t_opt    
 
-def get_optimal_launch_time(task):
-    D = get_optimal_duration(task)
-    Te = get_optimal_finish_time(task)
-    return Te - D
+#Computes optimal launch time to schedule task
+def get_optimal_launch_time(stage_id,task_id):
+    task = step_dependency_model['stages'][stage_id]['tasks'][task_id]
+    D = get_optimal_duration(i,j)
+    Te = get_optimal_finish_time(i,j)
+    task['Te'] = Te
+    task['Ts'] = Te - D
+    return task['Ts']
 
-def dispatcher(no_of_tasks,start_time):
+#Dispatches tasks according to their start times
+def dispatcher(no_of_tasks):
+    print('Dispatcher tasks now')
     start_time = time.time()
-    pool = Pool()
-    while no_of_tasks > 0:
+    results = []
+    while len(results) < no_of_tasks:
         if len(scheduled) == 0:
             continue
-        i = 0
-        while len(scheduled) > 0 and step_dependency_model['stages'][scheduled[i][1]]['tasks'][scheduled[i][2]] >= time.time()-start:
-            pool.apply(scheduled[i])
-
+        while len(scheduled) > 0 and scheduled[0][0] >= time.time()-start:
+            processes_to_dispatch = []
+            processes_to_dispatch.append(scheduled[0][1])
+            scheduled.pop(0)
+        with Pool() as pool:
+            results.append(pool.map_async(smap, processes_to_dispatch))
+        no_of_tasks -= len(processes_to_dispatch)
+    print('Scheduling done')
+    return results
 
 def schedule():
     with open('2_stage_map_reduce.json', 'r') as f:
@@ -159,7 +172,7 @@ def schedule():
     current_parents = []
     new_parents = []
 
-    res = []
+    results = []
 
     #Scheduling initial stages with no parents
     for i in range(0,len(step_dependency_model['stages'])):
@@ -169,16 +182,12 @@ def schedule():
         if stage['parent'] is None:
             new_parents.append(stage['stage_id'])
             for j in range(0,len(stage['tasks'])):
-                heapq.heappush(scheduled, (stage['task']['Ts'], functools.partial(exec_task,i,j,stage['exec_file'])))
+                heapq.heappush(scheduled, (stage['task'][j]['Ts'], (stage['task'][j]['Ts'],functools.partial(exec_task,i,j,stage['exec_file']))))
 
-    #Or fork a new process that polls a queue and schedules tasks as they come
+    #Starting the dispatcher
+    #There could be some contention for the queue of processes 'scheduled'
     with Pool() as pool:
-        #Find a way to fork and continue on this thread
-        res = pool.map_async(smap, scheduled)  
-    no_of_tasks -= len(scheduled)
-    scheduled = []
-    current_parents = new_parents
-    new_parents = []
+        results = pool.apply_async(dispatcher,no_of_tasks)
 
     #Scheduling remaining stages in bfs
     while no_of_tasks > 0:
@@ -187,19 +196,21 @@ def schedule():
             if stage['parent'] in current_parents:
                 new_parents.append(stage['stage_id'])
                 for j in range(0,len(stage['tasks'])):
+                    get_optimal_launch_time(i,j)                    
                     scheduled.append((functools.partial(exec_task,i,j,stage['exec_file'],i,j))
-                    get_optimal_launch_time(task)                    
-        #Find a way to fork and continue on this thread
-        with Pool() as pool:
-            res = pool.map(smap, scheduled)
-            print(res)
         no_of_tasks -= len(scheduled)
-        scheduled = []
         current_parents = new_parents
         new_parents = []
     
+    #Wait on all processes to complete
+    results.get()
     print('Total cost is:', total_cost)
     print('JCT given start time 0.0', job_end_time-job_start_time)
+
+    # Serializing json and writing to file
+    json_object = json.dumps(step_dependency_model, indent = 4)
+    with open("2_stage_map_reduce_lazy.json", "w") as outfile:
+        outfile.write(json_object)
 
 if __name__ == '__main__':
     schedule()

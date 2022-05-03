@@ -28,7 +28,7 @@ class Map():
     # Get filenames based on no of reducers and the input file name.
 
     input_file_size = 0
-    output_file_size = [0,0,0]
+    output_file_size = [0] * Map.no_of_reducers
 
     m = Map()
     file_names = m.getFileNames(files['input_file'])

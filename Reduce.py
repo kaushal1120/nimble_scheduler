@@ -45,4 +45,4 @@ class Reduce():
     input_file_size = (input_file_size/(1024*1024))
     output_file_size = (output_file_size/(1024*1024))
 
-    return [input_file_size,output_file_size]
+    return [input_file_size,[output_file_size]]

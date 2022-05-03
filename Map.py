@@ -28,7 +28,7 @@ class Map():
     # Get filenames based on no of reducers and the input file name.
 
     input_file_size = 0
-    output_file_size = 0
+    output_file_size = [0,0,0]
 
     m = Map()
     file_names = m.getFileNames(files['input_file'])
@@ -44,9 +44,10 @@ class Map():
         words = re.findall('\w+',line)
         for word in words:
           # Now consistent hash the word so that it always goes to one file
-          o_file = files[(hash(word) % Map.no_of_reducers) + 1]
+          index = hash(word) % Map.no_of_reducers
+          o_file = files[index + 1]
           o_line = word+' '+str(1)+os.linesep
-          output_file_size += len(o_line)
+          output_file_size[index] += len(o_line)
           o_file.write(o_line)
       for f in files[1:]:
         f.write('*****\n')
@@ -58,5 +59,5 @@ class Map():
       sum up the bytes of line and keep a running sum, and return it in MB.
     '''
     input_file_size = (input_file_size/(1024*1024))
-    output_file_size = (output_file_size/(1024*1024))
+    output_file_size = [ x/(1024*1024) for x in output_file_size]
     return [input_file_size, output_file_size]

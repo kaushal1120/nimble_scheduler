@@ -47,7 +47,7 @@ class EagerScheduler:
         return f()
 
     def schedule(self):
-        with open('2_stage_map_reduce_3.json', 'r') as f:
+        with open('2_stage_map_reduce_2.json', 'r') as f:
             self.step_dependency_model = json.load(f)
         print('Read step dependency model successfully')
 
@@ -57,7 +57,7 @@ class EagerScheduler:
             stage = self.step_dependency_model['stages'][i]
             for j in range(0,len(stage['tasks'])):
                 scheduled.append(functools.partial(self.exec_task,i,j,stage['exec_file']))
-        print('Tasks scheduled: ', scheduled)
+        #print('Tasks scheduled: ', scheduled)
 
         #schedule all stages at once
         with Pool() as pool:

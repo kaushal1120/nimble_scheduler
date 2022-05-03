@@ -20,15 +20,16 @@ class NimbleScheduler:
     #Used to terminate dispatcher process
     no_of_tasks = 0
 
-    def exec_task(self,i,j,exec_file):
+    stage_map = {}
 
+
+    def exec_task(self,i,j,exec_file):
         #Stores total cost of running all tasks individually
         total_cost=0.0
         #To compute JCT
         task_start_time=sys.float_info.max
         task_end_time=0.0
         #Stage map stage_id -> stage object
-        stage_map = {}
 
         optimal_task_duration = 0.0
         task = step_dependency_model['stages'][i]['tasks'][j]

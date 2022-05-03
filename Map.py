@@ -7,7 +7,7 @@ from contextlib import ExitStack
 class Map():
 
   #Have no of reducers here
-  no_of_reducers = 5
+  no_of_reducers = 3
 
   def getFileNames(self, i_file_name: str):
     file_names = [(i_file_name,'r')]

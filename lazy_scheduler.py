@@ -38,23 +38,23 @@ class LazyScheduler:
             end = time.time()
 
             #Update P, C, rc, rp, total job cost, optimal step duration, job finish time
-            self.step_dependency_model['stages'][stg_idx]['tasks'][task_idx]['steps'][0]['P'] = P
-            self.step_dependency_model['stages'][stg_idx]['tasks'][task_idx]['steps'][0]['C'] = C
+            step['P'] = P
+            step['C'] = C
             #Averaging for better estimates
-            step['rc'] = (step['rc'] + C/(end-start))/(task['no_of_runs']+1)
-            step['rp'] = (step['rp'] + P/(end-start))/(task['no_of_runs']+1)
+            step['rc'] = (step['rc']*task['no_of_runs'] + C/(end-start))/(task['no_of_runs']+1)
+            step['rp'] = (step['rp']*task['no_of_runs'] + P/(end-start))/(task['no_of_runs']+1)
             optimal_task_duration += end-start
-            step['d*'] = (step['d*'] + end - start)/(task['no_of_runs'] + 1)
+            step['d*'] = (step['d*']*task['no_of_runs'] + end - start)/(task['no_of_runs'] + 1)
             #Computing cost and star and end times for JCT calculation
             total_cost += end-start
             task_end_time = max(task_end_time,end)
             task_start_time = min(task_start_time,start)
 
         #Update optimal task duration, no_of_runs
-        task['D*'] = (task['D*'] + optimal_task_duration)/(task['no_of_runs'] + 1)
+        task['D*'] = (task['D*']*task['no_of_runs'] + optimal_task_duration)/(task['no_of_runs'] + 1)
         task['no_of_runs'] += 1
 
-        return [total_cost, task_end_time, task_start_time]
+        return [total_cost, task_end_time, task_start_time, [stg_idx, task_idx, task]]
 
 
 
@@ -62,7 +62,7 @@ class LazyScheduler:
         return f()
 
     def schedule(self):
-        with open('2_stage_map_reduce_3.json', 'r') as f:
+        with open('2_stage_map_reduce_lazy.json', 'r') as f:
             self.step_dependency_model = json.load(f)
         print('Read step dependency model successfully')
 
@@ -91,8 +91,10 @@ class LazyScheduler:
             print(res)
 
         total_cost += sum([res[x][0] for x in range(len(res))])
-        job_end_time = max(job_end_time, max([res[x][1] for x in range(len(res))]))
-        job_start_time = min(job_start_time, min([res[x][2] for x in range(len(res))]))
+        job_start_time = min([res[x][2] for x in range(len(res))])
+
+        for obj in res:
+            self.step_dependency_model["stages"][obj[3][0]]['tasks'][obj[3][1]] = obj[3][2]
 
         no_of_tasks -= len(scheduled)
         scheduled = []
@@ -112,8 +114,11 @@ class LazyScheduler:
                 print(res)
 
             total_cost += sum([res[x][0] for x in range(len(res))])
-            job_end_time = max(job_end_time, max([res[x][1] for x in range(len(res))]))
-            job_start_time = min(job_start_time, min([res[x][2] for x in range(len(res))]))
+            job_end_time = max([res[x][1] for x in range(len(res))])
+            for obj in res:
+                self.step_dependency_model["stages"][obj[3][0]]['tasks'][obj[3][1]] = obj[3][2]
+
+            # job_start_time = min(job_start_time, min([res[x][2] for x in range(len(res))]))
 
             no_of_tasks -= len(scheduled)
             scheduled = []

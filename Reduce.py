@@ -21,14 +21,16 @@ class Reduce():
     with open(file_name, encoding='utf-8') as r_file:
       while True:
         for line in r_file:
-          input_file_size += len(line)
-          if line.strip() == "#####":
-            start_count += 1
-          elif line.strip() == "*****":
-            end_count += 1
-          else:
-            d = line.split(' ')
-            words_dict[d[0]] += int(d[1])
+          if line.strip():
+            input_file_size += len(line)
+            if line.strip() == "#####":
+              start_count += 1
+            elif line.strip() == "*****":
+              end_count += 1
+            else:
+              d = line.split(' ')
+              if len(d) == 2:
+                words_dict[d[0].strip()] += int(d[1].strip())
           
         if start_count - end_count == 0:
             break

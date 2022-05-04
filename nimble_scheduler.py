@@ -1,19 +1,9 @@
 #!/usr/bin/python
 
 from multiprocessing import Pool, Manager
-from multiprocessing.managers import SyncManager
 from queue import PriorityQueue
 from itertools import chain
 import heapq, functools, time, json, sys, threading
-
-class MyManager(SyncManager):
-    pass
-MyManager.register("PriorityQueue", PriorityQueue)  # Register a shared PriorityQueue
-
-def Manager():
-    m = MyManager()
-    m.start()
-    return m
 
 class NimbleScheduler:
     #global step dependency model
@@ -31,9 +21,8 @@ class NimbleScheduler:
 
         optimal_task_duration = 0.0
         task = self.step_dependency_model['stages'][stg_idx]['tasks'][task_idx]
-        
+
         for step in task['steps']:
-            #steps_launched[step['step_id']] = step
             obj = getattr(__import__(exec_file),exec_file)
 
             #Prepare arguments to task exec
@@ -41,7 +30,7 @@ class NimbleScheduler:
             for i in range(len(step['step_func_arg_keys'])):
                 arg_dict[step['step_func_arg_keys'][i]] = step['step_func_arg_vals'][i]
             print('Scheduling task_id: ', task['task_id'], 'of', exec_file, 'at', str(time.time()))
-            
+
             #Fork new process for task
             start = time.time()
             C,P = getattr(obj, step['step_func_name'])(arg_dict)
@@ -50,7 +39,6 @@ class NimbleScheduler:
             #Update P, C, rc, rp, total job cost, optimal step duration, job finish time
             step['P'] = P
             step['C'] = C
-            #step_discrete_timestamps[step['step_id']] = [start,end]
             #Averaging for better estimates
             step['rc'] = (step['rc']*task['no_of_runs'] + C/(end-start))/(task['no_of_runs']+1)
             for i in range(0,len(P)):
@@ -89,7 +77,9 @@ class NimbleScheduler:
     def get_step_finish_time(self,step):
         parent_step_start_time = sys.float_info.max
         parent_stage = self.stage_map[step['parent'][0:1]]
+
         #print('Parent stage', parent_stage['stage_id'])
+
         step_discrete_intervals = []
         rps = []
         for task in parent_stage['tasks']:
@@ -99,14 +89,11 @@ class NimbleScheduler:
             parent_step_start_time = min(parent_step_start_time,task['Ts*']+task['D*']-produce_step['d*'])
             interval = [task['D*']-produce_step['d*'],task['D*']]
             step_discrete_intervals.append(interval)
-            print(step['step_id'])
-            print(step['step_id'][2])
-            print(ord(step['step_id'][2]))
             rps.append(produce_step['rp'][ord(step['step_id'][2])-ord('0')])
 
-        #print('Parent_step_start_time: ', parent_step_start_time)   
-        #print('step_discrete_intervals', step_discrete_intervals, 'rps', rps)         
-        #step_discrete_intervals, rps = (list(t) for t in zip(*sorted(zip(step_discrete_intervals, rps))))
+        #print('Parent_step_start_time: ', parent_step_start_time)
+        #print('step_discrete_intervals', step_discrete_intervals, 'rps', rps)
+
         #Compute aggregated rp(t) for each discretized time interval
         step_intervals = []
         new_rps = []
@@ -117,15 +104,17 @@ class NimbleScheduler:
         for i in range(0,len(step_intervals)):
             for j in range(0,len(step_discrete_intervals)):
                 if self.interval_overlaps(step_intervals[i],step_discrete_intervals[j]):
-                    new_rps[i] += rps[j]  
-        #print('step_discrete_intervals', step_intervals, 'rps', new_rps)         
+                    new_rps[i] += rps[j]
+
         #Calculate rac for each discretized time interval
         produced_till_here = 0
         consumed_till_here = 0
         actually_consumed_till_here = 0
         time_passed = 0
         racs = []
+
         #print('rc',step['rc'])
+
         for i in range(0,len(step_intervals)):
             time_passed += step_intervals[i][1] - step_intervals[i][0]
             produced_till_here += (step_intervals[i][1] - step_intervals[i][0])*new_rps[i]
@@ -135,13 +124,19 @@ class NimbleScheduler:
             else:
                 racs.append(step['rc'])
             actually_consumed_till_here += (step_intervals[i][1] - step_intervals[i][0])*racs[i]
+
         #print('racs',racs)
+
         #Calculate optimal step finish time (which only considers its parent step)
         te = step_intervals[len(step_intervals)-1][1]
+
         #print('act cons', actually_consumed_till_here, 'prod', produced_till_here, 'te', te)
+
         if actually_consumed_till_here < produced_till_here:
             te += (produced_till_here - actually_consumed_till_here)/step['rc']
+
         #print('te', te)
+
         return parent_step_start_time + te
 
     #Computes optimal finish time of task
@@ -154,8 +149,10 @@ class NimbleScheduler:
             else:
                 t = t_opt + step['d*']
             t_opt = t
+
         #print('topt',t_opt)
-        return t_opt    
+
+        return t_opt
 
     #Computes optimal launch time to schedule task
     def get_optimal_launch_time(self,stg_id,task_id):
@@ -164,7 +161,9 @@ class NimbleScheduler:
         Te = self.get_optimal_finish_time(stg_id,task_id)
         task['Te*'] = Te
         task['Ts*'] = Te - D
+
         #print('D*', D, 'Te', Te, 'Ts', Te-D)
+
         return task['Ts*']
 
     #Dispatches tasks according to their start times
@@ -175,7 +174,7 @@ class NimbleScheduler:
         while len(results) < no_of_tasks:
             if scheduled.empty():
                 continue
-            #print(scheduled.queue[0][0], time.time()-start_time)
+
             while not scheduled.empty() and scheduled.queue[0][0] <= time.time()-start_time:
                 results.append(pool.apply_async(self.exec_task,scheduled.get()[1]))
         print('Scheduling done')
@@ -209,9 +208,8 @@ class NimbleScheduler:
                 for j in range(0,len(stage['tasks'])):
                     scheduled.put((stage['tasks'][j]['Ts*'],(i,j,stage['exec_file'],)))
                     no_of_tasks -= 1
-    
+
         #Starting the dispatcher
-        #There could be contention for the queue of processes 'scheduled'        
         dispatcher_thread = threading.Thread(target=self.dispatcher, args=[no_of_tasks_for_dispatcher,results,scheduled])
         dispatcher_thread.start()
 
@@ -222,8 +220,7 @@ class NimbleScheduler:
                 if stage['parent'] in current_parents:
                     new_parents.append(stage['stage_id'])
                     for j in range(0,len(stage['tasks'])):
-                        self.step_dependency_model['stages'][i]['tasks'][j]['Ts*'] = self.get_optimal_launch_time(i,j) 
-                        print(i,j,stage['tasks'][j]['Ts*'])                   
+                        self.step_dependency_model['stages'][i]['tasks'][j]['Ts*'] = self.get_optimal_launch_time(i,j)
                         scheduled.put((stage['tasks'][j]['Ts*'],(i,j,stage['exec_file'],)))
                         no_of_tasks -= 1
             current_parents = new_parents
@@ -232,7 +229,8 @@ class NimbleScheduler:
         #Wait on all processes to complete
         dispatcher_thread.join()
         res = [x.get() for x in results]
-        #print(res)
+
+        #Computing total cost, jct for complete job. Updating changes to step dependency model
         total_cost += sum([res[x][0] for x in range(len(res))])
         job_start_time = min([res[x][2] for x in range(len(res))])
         job_end_time = max([res[x][1] for x in range(len(res))])

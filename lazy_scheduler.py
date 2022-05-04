@@ -43,7 +43,7 @@ class LazyScheduler:
                 step['rp'][i] = (step['rp'][i]*task['no_of_runs'] + P[i]/(end-start))/(task['no_of_runs']+1)
             optimal_task_duration += end-start
             step['d*'] = (step['d*']*task['no_of_runs'] + end - start)/(task['no_of_runs'] + 1)
-            #Computing cost and star and end times for JCT calculation
+            #Computing cost and start and end times for JCT calculation
             cost += end-start
             task_end_time = max(task_end_time,end)
             task_start_time = min(task_start_time,start)

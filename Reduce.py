@@ -1,4 +1,5 @@
 from collections import defaultdict
+from time import sleep
 
 class Reduce():
 
@@ -20,6 +21,12 @@ class Reduce():
     words_dict = defaultdict(int)
     with open(file_name, encoding='utf-8') as r_file:
       while True:
+        # Remove this sleep if you are running reduce very isolated, currently in eager it does busy waiting 
+        # until we are finished writing to the files, busy waiting consumes CPU cycles and hamper the map 
+        # process if they are running on the same CPU/core. So be wary carefule. We allow the reduce to sleep
+        # for 500ms so that if it doesnt have anything to read just sleep for sometimes and let map make 
+        # progress. 
+        sleep(0.5)
         for line in r_file:
           if line.strip():
             input_file_size += len(line)

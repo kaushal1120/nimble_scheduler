@@ -47,7 +47,7 @@ class EagerScheduler:
         return f()
 
     def schedule(self):
-        with open('2_stage_map_reduce_2.json', 'r') as f:
+        with open('2_stage_map_reduce_3.json', 'r') as f:
             self.step_dependency_model = json.load(f)
         print('Read step dependency model successfully')
 
